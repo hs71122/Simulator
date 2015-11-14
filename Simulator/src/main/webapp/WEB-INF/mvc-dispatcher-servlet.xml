@@ -1,0 +1,85 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+	<context:component-scan base-package="org.cdapsimulator"/>
+	
+	<!-- Factory bean that creates the Mongo instance -->
+    <bean id="mongo" class="org.springframework.data.mongodb.core.MongoFactoryBean">
+    	<!-- LOCAL -->
+        <!-- <property name="host" value="localhost:27017"  />   -->
+        
+        <!-- CLOUD -->
+        <property name="host" value="ds043348.mongolab.com:43348"  />
+    </bean>
+     
+     <!-- DB user -->
+    <bean id="user" class="org.springframework.data.authentication.UserCredentials" >
+    	<constructor-arg name="username" value="cdap" />
+    	<constructor-arg name="password" value="cdap" />
+    </bean>
+    
+    <!-- MongoTemplate for connecting and quering the documents in the database -->
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+    	
+    	<constructor-arg name="mongo" ref="mongo" />
+    	
+    	<!-- LOCAL -->
+        <!-- <constructor-arg name="databaseName" value="ride_trust" />   -->
+        
+        <!-- CLOUD -->
+        <constructor-arg name="databaseName" value="cdap" />
+        <constructor-arg name="userCredentials" ref="user"/> 
+    </bean>
+    
+    <!-- DAO Layers -->
+	<bean id="userDAOImpl" class="org.cdapsimulator.dao.UserDAOImpl">
+    	<property name="mongoOperation" ref="mongoTemplate"/>
+	</bean>
+	<!-- <bean id="friendRequestDAOImpl" class="org.cdapsimulator.dao.FriendRequestDAOImpl">
+    	<property name="mongoOperation" ref="mongoTemplate"/>
+	</bean>
+	<bean id="rideDAOImpl" class="org.cdapsimulator.dao.RideDAOImpl">
+    	<property name="mongoOperation" ref="mongoTemplate"/>
+	</bean>
+	<bean id="userMessageDAOImpl" class="org.ridetrust.dao.UserMessageDAOImpl">
+    	<property name="mongoOperation" ref="mongoTemplate"/>
+	</bean>
+	<bean id="rideRequestDAOImpl" class="org.ridetrust.dao.RideRequestDAOImpl">
+    	<property name="mongoOperation" ref="mongoTemplate"/>
+	</bean>-->
+	
+	<!-- Task  Scheduling  
+	<task:annotation-driven />
+	<bean id="SchedulerCheckDriverRoute" class="org.ridetrust.schedulers.SchedulerCheckDriverRoute">
+	</bean>-->
+
+	
+
+	<!-- mapping to views -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+	
+	
+	<!-- resource css,js mapping -->
+	<mvc:annotation-driven />
+	
+	
+	<mvc:resources mapping="/static/**" location="/"/>
+	
+	<!-- WebApp -->
+	<mvc:resources mapping="/resources/**" location="/resources/theme/" />
+	<mvc:resources mapping="/bower/**" location="/resources/bower_components/" />
+
+	<mvc:default-servlet-handler />
+
+</beans>
